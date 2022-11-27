@@ -1,36 +1,37 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { Box, Button, Flex, useToast } from "@chakra-ui/react";
 import { deletePost } from "./posts.api";
+import useDealayedFetch from "../../hooks/useDealayedFetch";
 
 const Post = ({ id, content, onDelete }) => {
   const toast = useToast();
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
+  const {loading,error,success,exec} =useDealayedFetch(deletePost)
 
-  const handleDelete = async () => {
-    try {
-      setLoading(true);
-      await deletePost(id);
-      onDelete(id);
-      toast({
-        title: `Post with id: ${id}, deleted successfully`,
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-        position: "top-right",
-      });
-    } catch (e) {
+
+
+  useEffect(()=>{
+    if(error){
       toast({
         title: "Error Occurred while fetching data",
-        description: e.message,
+        description: error,
         status: "error",
         duration: 3000,
         isClosable: true,
         position: "top-right",
-      });
-    } finally {
-      setLoading(false);
+      })
+    }else if(success){
+      onDelete(id)
+      toast({
+        title: "Deleted successsfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      })
+
     }
-  };
+  },[toast,error,success])
 
   return (
     <Flex gap={2}>
@@ -39,7 +40,7 @@ const Post = ({ id, content, onDelete }) => {
         size="sm"
         isLoading={loading}
         loadingText="Deleting..."
-        onClick={handleDelete}
+        onClick={()=>exec(id)}
       >
         Delete
       </Button>
